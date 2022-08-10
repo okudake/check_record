@@ -16,11 +16,60 @@ struct ContentView: View {
             TextField("ユーザーネーム", text: $inputText, prompt: Text("ユーザーネームを入力してね！"))
                 .onSubmit {
                     Task {
-                        await trackerApi.searchOkashi(keyword: inputText)
+                        await trackerApi.searchUser(keyword: inputText)
                     }
                 }
                 .submitLabel(.search)
                 .padding()
+            
+            Button(action: {
+                Task {
+                    await trackerApi.searchUser(keyword: "k_n399")
+                }
+            }, label:  {
+                Text("k_n399で検索する")
+            })
+            
+            Spacer()
+            
+            if let unwrappedUserData = trackerApi.dataList.first{
+                let userData = userData(Data: unwrappedUserData)
+                let overviewData = userData.getOverviewData()
+                
+                Text("総キル数:" + userData.getKills())
+                Text("ランク: " + userData.getRankScore())
+                
+                List {
+                    ForEach(1 ..< 6) { index in
+                        let legendData = userData.getLegendData(index: index)
+
+                        VStack{
+                            Text(legendData.name)
+                                .font(.title)
+
+                            HStack{
+                                //レジェンド画像
+                                AsyncImage(url: legendData.imageUrl) { image in
+                                    image
+                                        .resizable()
+                                        .frame(width: 100, height: 100)
+
+                                } placeholder: {
+                                    ProgressView()
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+            
+            
+            
+            
+            Spacer()
+            
+            
         }
     }
 }

@@ -18,8 +18,10 @@ struct OkashiItem: Identifiable {
 class TrackerApi: ObservableObject {
     
     
-    @Published var okashiList: [OkashiItem] = []
-    func searchOkashi(keyword: String) async {
+    @Published var dataList: [ResultJson] = []
+    
+    
+    func searchUser(keyword: String) async {
         
         guard let keyword_encode = keyword.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
         else {
@@ -27,24 +29,36 @@ class TrackerApi: ObservableObject {
         }
         
         
-        guard let req_url = URL(string: "https://public-api.tracker.gg/v2/apex/standard/profile/psn/\(keyword_encode)")
+        guard let req_url = URL(string: const.ApiURL + keyword_encode)
         
         else {
             return
         }
         
+        
         var request = URLRequest(url: req_url)
-        request.addValue("d0c20a65-5dc6-47b4-b920-baa10d6a56ce", forHTTPHeaderField: "TRN-Api-Key")
+        request.addValue(const.TRNApiKey, forHTTPHeaderField: "TRN-Api-Key")
         
     
         let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
+            
+            //検索前に一度持っているデータを全て消去
+            DispatchQueue.main.async {
+                self.dataList.removeAll()
+                
+            }
+            
             do {
                 let decoder = JSONDecoder()
-                let json = try decoder.decode(ResultJson.self , from: data!)
+                let decodedData = try decoder.decode(ResultJson.self , from: data!)
                 
-                print(json.data?.platformInfo?.platformSlug)
+                DispatchQueue.main.async {
+                    self.dataList.append(decodedData)
+                }
                 
-                print(data!)
+            
+                
+                print(decodedData)
             } catch {
                 print(error)
             }
@@ -52,7 +66,6 @@ class TrackerApi: ObservableObject {
         }
         task.resume()
         
-        print(self.okashiList)
     
     }
 
