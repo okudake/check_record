@@ -29,6 +29,7 @@ struct ResultJson: Codable {
     
     struct Metadata: Codable {
         let currentSeason: Int
+        let activeLegendName: String
     }
     
     struct Segment: Codable {
